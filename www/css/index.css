@@ -1,0 +1,111 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+body, html {
+    height: 100%;
+    background-color: #121212;
+    color: #e0e0e0;
+}
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 600px;
+    margin: 0 auto;
+    border-left: 1px solid #333;
+    border-right: 1px solid #333;
+}
+.top-bar {
+    background: #1f1f1f;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+}
+.status {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+.status.disconnected { background: #d32f2f; color: white; }
+.status.connected { background: #388e3c; color: white; }
+
+.panel {
+    background: #181818;
+    padding: 10px 15px;
+    border-bottom: 1px solid #333;
+    max-height: 150px;
+    overflow-y: auto;
+}
+.panel h3 {
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #b0bec5;
+}
+#device-list {
+    list-style: none;
+}
+#device-list li {
+    padding: 6px;
+    background: #2a2a2a;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+#device-list li:hover {
+    background: #37474f;
+}
+
+.chat-area {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.message {
+    max-width: 75%;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    word-break: break-all;
+}
+.message.received {
+    background: #2a2a2a;
+    align-self: flex-start;
+}
+.message.sent {
+    background: #0d47a1;
+    align-self: flex-end;
+}
+.bottom-bar {
+    background: #1f1f1f;
+    padding: 10px;
+    display: flex;
+    gap: 8px;
+    border-top: 1px solid #333;
+}
+.bottom-bar input[type="text"] {
+    flex: 1;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+button {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+button:active { background: #555; }
+.hidden { display: none !important; }
