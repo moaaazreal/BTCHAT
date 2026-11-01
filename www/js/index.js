@@ -11,6 +11,15 @@ function onDeviceReady() {
 
     document.getElementById('file-input').addEventListener('change', handleFileSelect);
     
+    // Vault UI buttons binding
+    let vaultBtn = document.createElement('button');
+    vaultBtn.innerText = "📁 Open Vault";
+    vaultBtn.style.marginLeft = "8px";
+    vaultBtn.onclick = openVault;
+    document.querySelector('.top-bar').appendChild(vaultBtn);
+
+    document.getElementById('close-vault').addEventListener('click', closeVault);
+
     listenForData();
 }
 
@@ -151,6 +160,8 @@ function handleFileSelect(event) {
 
 // 7. Save Received File inside Private App Sandbox (Vault)
 function saveFileToVault(fileName, base64Data) {
+    if (typeof cordova === 'undefined') return;
+
     window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(dirEntry) {
         dirEntry.getDirectory("vault", { create: true }, function(vaultDir) {
             vaultDir.getFile(fileName, { create: true, exclusive: false }, function(fileEntry) {
@@ -172,6 +183,75 @@ function saveFileToVault(fileName, base64Data) {
     }, function(err) {
         console.log("Storage error: " + JSON.stringify(err));
     });
+}
+
+// 8. Open In-App Vault Viewer & List Files
+function openVault() {
+    let modal = document.getElementById('vault-modal');
+    let listContainer = document.getElementById('vault-files-list');
+    modal.classList.remove('hidden');
+    listContainer.innerHTML = "<p>Loading vault files...</p>";
+
+    if (typeof cordova === 'undefined') {
+        listContainer.innerHTML = "<p>Vault works on real device environment.</p>";
+        return;
+    }
+
+    window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(dirEntry) {
+        dirEntry.getDirectory("vault", { create: true }, function(vaultDir) {
+            let reader = vaultDir.createReader();
+            reader.readEntries(function(entries) {
+                listContainer.innerHTML = "";
+                if(entries.length === 0) {
+                    listContainer.innerHTML = "<p>No files saved in vault yet.</p>";
+                    return;
+                }
+                entries.forEach(function(entry) {
+                    if(entry.isFile) {
+                        let item = document.createElement('div');
+                        item.style.padding = "8px";
+                        item.style.margin = "4px 0";
+                        item.style.background = "#2a2a2a";
+                        item.style.borderRadius = "4px";
+                        item.style.cursor = "pointer";
+                        item.innerText = entry.name;
+                        
+                        // Click to open file inside app viewer
+                        item.onclick = function() {
+                            openFileInViewer(entry.nativeURL, entry.name);
+                        };
+                        listContainer.appendChild(item);
+                    }
+                });
+            }, function(err) {
+                listContainer.innerHTML = "<p>Error reading vault files.</p>";
+            });
+        });
+    });
+}
+
+function closeVault() {
+    document.getElementById('vault-modal').classList.add('hidden');
+}
+
+// 9. In-App File Viewer Logic (Images / Text / PDFs without leaving app)
+function openFileInViewer(fileUrl, fileName) {
+    let listContainer = document.getElementById('vault-files-list');
+    
+    if(fileName.endsWith('.jpg') || fileName.endsWith('.png') || fileName.endsWith('.jpeg')) {
+        listContainer.innerHTML = `<h4>Viewing: ${fileName}</h4><img src="${fileUrl}" style="max-width:100%; margin-top:10px;"/><br><button onclick="openVault()">Back to List</button>`;
+    } else {
+        // For text or other files, fetch content and show in box
+        window.resolveLocalFileSystemURL(fileUrl, function(fileEntry) {
+            fileEntry.file(function(file) {
+                let reader = new FileReader();
+                reader.onloadend = function() {
+                    listContainer.innerHTML = `<h4>Viewing: ${fileName}</h4><pre style="background:#111; padding:10px; color:#0f0; max-height:200px; overflow:auto;">${this.result}</pre><br><button onclick="openVault()">Back to List</button>`;
+                };
+                reader.readAsText(file);
+            });
+        });
+    }
 }
 
 function b64toBlob(b64Data, contentType) {
